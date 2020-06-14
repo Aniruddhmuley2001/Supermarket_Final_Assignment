@@ -18,5 +18,11 @@ class Billing{
 }
 
 int main(){
-	cout<<"Hello World!";
+ int a;
+ cout<<"************************************"<<endl;
+ cout<<"              Main menu             "<<endl;
+ cout<<"************************************"<<endl;
+ cout<<"Enter the following option to define your role"<<endl;
+
+ return 0;
 }
