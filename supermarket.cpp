@@ -1,8 +1,19 @@
 #include <iostream>
 using namespace std;
 
+struct Item {
+    long int ITEM_ID;
+    string NAME;
+    float RATE;
+    int QUANTITY;
+    Item* next;
+};
+
 class Inventory{
  private:
+  Item* HT[100];
+  void SortedInsert(Item*, int);
+  int hash(int key) { return key % 100; };
   void Add_item();
   void Delete_item();
   void Update_item();
@@ -12,6 +23,57 @@ class Inventory{
   void update_stock();
   void Get_Product_Info();
 };
+
+void Inventory::SortedInsert(Item* it, int index) {
+    Item* head = HT[index];
+    if (!head)
+        HT[index] = it;
+    else {
+        Item* p = head, * q = nullptr;
+        while (p && p->ITEM_ID < it->ITEM_ID) {
+            q = p;
+            p = p->next;
+        }
+        if (q) {
+            q->next = it;
+            it->next = p;
+        }
+        else {
+            it->next = head;
+            HT[index] = it;
+        }
+    }
+
+}
+
+Inventory::Inventory() {
+    for (int i = 0; i < 100; i++)
+        HT[i] = nullptr;
+}
+
+void Inventory::Insert(long int id, string name, float rate, int quantity) {
+    Item* it = new Item;
+    it->ITEM_ID = id;
+    it->NAME = name;
+    it->RATE = rate;
+    it->QUANTITY = quantity;
+    it->next = nullptr;
+
+    int index = hash(it->ITEM_ID);
+    SortedInsert(it, index);
+}
+
+Item * Inventory::Find(int key) {
+    int index = hash(key);
+    Item* p = HT[index];
+
+    while (p && p->ITEM_ID != key) {
+        p = p->next;
+    }
+
+    return p;
+
+}
 
 
 class Customer{
@@ -36,7 +98,7 @@ class Billing{
 
 
 int main(){
- Inventory i1;
+ Inventory Item_list;
  
  long INVENTORY_DATASET[100][4] = {
   {111100000001,1,100,20},{111100000002,2,110,20},{111100000003,3,120,20},{111100000004,4,130,20},{111100000005,5,140,20},{111100000006,6,150,20},{111100000007,7,160,20},{111100000008,8,170,20},{111100000009,9,180,20},{111100000010,10,190,20},
@@ -56,7 +118,7 @@ int main(){
   string NAME = to_string(INVENTORY_DATASET[i][1]);
   float RATE =  INVENTORY_DATASET[i][2];
   int QUANTITY =  INVENTORY_DATASET[i][2];
-  i1.Insert(ITEM_ID, NAME, RATE, QUANTITY);
+  Item_list.Insert(ITEM_ID, NAME, RATE, QUANTITY);
  }
 
 
@@ -79,7 +141,7 @@ int main(){
   long int CUSTOMER_ID = CUSTOMER_DATASET[i][0];
   string NAME = to_string(CUSTOMER_DATASET[i][1]);
   float POINTS =  CUSTOMER_DATASET[i][2];
-  c1.Insert(CUSTOMER_ID, NAME, RATE);
+  c1.Insert(CUSTOMER_ID, NAME, POINTS);
  }
 
  
