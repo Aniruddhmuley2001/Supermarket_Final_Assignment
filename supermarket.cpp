@@ -2,23 +2,37 @@
 using namespace std;
 
 class Inventory{
-	
-}
+ private:
+  void Add_item();
+  void Delete_item();
+  void Update_item();
+ public:
+  Inventory();
+  void Insert(long int, string, float, int);
+  void update_stock();
+  void Get_Product_Info();
+};
 
 
 class Customer{
-	
-}
+ private:
+  long int CUSTOMER_ID;
+  string NAME;
+  float POINTS;
+ public:
+  void Add_customer();
+  void Update_points();
+};
 
 
 class Manager{
 	
-}
+};
 
 
 class Billing{
 	
-}
+};
 
 
 int main(){
@@ -38,7 +52,7 @@ int main(){
  };
 
  for (int i = 0; i < 100; i++) {
-  int ITEM_ID = INVENTORY_DATASET[i][0];
+  long int ITEM_ID = INVENTORY_DATASET[i][0];
   string NAME = to_string(INVENTORY_DATASET[i][1]);
   float RATE =  INVENTORY_DATASET[i][2];
   int QUANTITY =  INVENTORY_DATASET[i][2];
@@ -62,9 +76,9 @@ int main(){
  };
  
  for (int i = 0; i < 100; i++) {
-  int CUSTOMER_ID = CUSTOMER_DATASET[i][0];
+  long int CUSTOMER_ID = CUSTOMER_DATASET[i][0];
   string NAME = to_string(CUSTOMER_DATASET[i][1]);
-  float RATE =  CUSTOMER_DATASET[i][2];
+  float POINTS =  CUSTOMER_DATASET[i][2];
   c1.Insert(CUSTOMER_ID, NAME, RATE);
  }
 
