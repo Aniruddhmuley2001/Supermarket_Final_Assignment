@@ -11,23 +11,25 @@ struct Item {
 
 class Inventory{
  private:
-  Item* HT[100];
+  Item* HT1[10];
   void SortedInsert(Item*, int);
-  int hash(int key) { return key % 100; };
+  int hash(int key) { return key % 10; };
   void Add_item();
   void Delete_item();
   void Update_item();
+  friend class Manager;
  public:
   Inventory();
   void Insert(long int, string, float, int);
   void update_stock();
   void Get_Product_Info();
+  Item* Find(int);
 };
 
 void Inventory::SortedInsert(Item* it, int index) {
-    Item* head = HT[index];
+    Item* head = HT1[index];
     if (!head)
-        HT[index] = it;
+        HT1[index] = it;
     else {
         Item* p = head, * q = nullptr;
         while (p && p->ITEM_ID < it->ITEM_ID) {
@@ -40,7 +42,7 @@ void Inventory::SortedInsert(Item* it, int index) {
         }
         else {
             it->next = head;
-            HT[index] = it;
+            HT1[index] = it;
         }
     }
 
@@ -48,7 +50,7 @@ void Inventory::SortedInsert(Item* it, int index) {
 
 Inventory::Inventory() {
     for (int i = 0; i < 100; i++)
-        HT[i] = nullptr;
+        HT1[i] = nullptr;
 }
 
 void Inventory::Insert(long int id, string name, float rate, int quantity) {
@@ -65,7 +67,7 @@ void Inventory::Insert(long int id, string name, float rate, int quantity) {
 
 Item * Inventory::Find(int key) {
     int index = hash(key);
-    Item* p = HT[index];
+    Item* p = HT1[index];
 
     while (p && p->ITEM_ID != key) {
         p = p->next;
@@ -76,19 +78,86 @@ Item * Inventory::Find(int key) {
 }
 
 
-class Customer{
+struct Customer {
+    long int CUSTOMER_ID;
+    string NAME_CUSTOMER;
+    float POINTS;
+    Customer* next;
+};
+
+class Customers{
  private:
+  Customer* HT2[10];
+  void SortedInsert(Customer*, int);
+  int hash(int key) { return key % 10; };
   long int CUSTOMER_ID;
-  string NAME;
+  string NAME_CUSTOMER;
   float POINTS;
  public:
+  Customers();
+  void Insert(long int, string, float);
   void Add_customer();
   void Update_points();
+  Customer* Find(int);
 };
+
+void Customers::SortedInsert(Customer* cust, int index) {
+    Customer* head = HT2[index];
+    if (!head)
+        HT2[index] = cust;
+    else {
+        Customer* p = head, * q = nullptr;
+        while (p && p->CUSTOMER_ID < cust->CUSTOMER_ID) {
+            q = p;
+            p = p->next;
+        }
+        if (q) {
+            q->next = cust;
+            cust->next = p;
+        }
+        else {
+            cust->next = head;
+            HT2[index] = cust;
+        }
+    }
+
+}
+
+Customers::Customers() {
+    for (int i = 0; i < 100; i++)
+        HT2[i] = nullptr;
+}
+
+void Customers::Insert(long int id, string name, float points) {
+    Customer* cust = new Customer;
+    cust->CUSTOMER_ID = id;
+    cust->NAME_CUSTOMER = name;
+    cust->POINTS = points;
+    cust->next = nullptr;
+
+    int index = hash(cust->CUSTOMER_ID);
+    SortedInsert(cust, index);
+}
+
+Customer * Customers::Find(int key) {
+    int index = hash(key);
+    Customer* p = HT2[index];
+
+    while (p && p->CUSTOMER_ID != key) {
+        p = p->next;
+    }
+
+    return p;
+
+}
 
 
 class Manager{
-	
+ private:
+  long int MANAGER_ID;
+  string NAME_MANAGER;
+ public:
+  
 };
 
 
@@ -122,7 +191,7 @@ int main(){
  }
 
 
- Customer c1;
+ Customers Customer_List;
 
  long CUSTOMER_DATASET[100][3] = {
   {9400000001,1,0},{9400000002,2,0},{9400000003,3,0},{9400000004,4,0},{9400000005,5,0},{9400000006,6,0},{9400000007,7,0},{9400000008,8,0},{9400000009,9,0},{9400000010,10,0},
@@ -139,9 +208,9 @@ int main(){
  
  for (int i = 0; i < 100; i++) {
   long int CUSTOMER_ID = CUSTOMER_DATASET[i][0];
-  string NAME = to_string(CUSTOMER_DATASET[i][1]);
+  string NAME_CUSTOMER = to_string(CUSTOMER_DATASET[i][1]);
   float POINTS =  CUSTOMER_DATASET[i][2];
-  c1.Insert(CUSTOMER_ID, NAME, POINTS);
+  Customer_List.Insert(CUSTOMER_ID, NAME_CUSTOMER, POINTS);
  }
 
  
