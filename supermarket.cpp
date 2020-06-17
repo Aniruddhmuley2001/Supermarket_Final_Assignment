@@ -161,8 +161,8 @@ class Manager{
 };
 
 
-class Billing{
-	
+class Billing: public Inventory, public Customers{
+
 };
 
 
@@ -213,8 +213,24 @@ int main(){
   Customer_List.Insert(CUSTOMER_ID, NAME_CUSTOMER, POINTS);
  }
 
- 
- 
+ long int count, customerId;
+ cin>>customerId;
+ cin>>count;
+ long int itemId[count];
+ int quantity[count];
+ for(int i = 0; i < count; i++)
+ {
+  cin>>itemId[i];
+  cin>>quantity[i];
+ }
+
+ Inventory *s1, *s2, *s3;
+
+ s1 = Item_list.Find(111100000021);
+ s2 = Item_list.Find(111100000057);
+ s3 = Item_list.Find(111100000084);
+
+    cout << s1->NAME  << endl << s2->NAME << endl << s3->NAME << endl;
  
  return 0;
 }
