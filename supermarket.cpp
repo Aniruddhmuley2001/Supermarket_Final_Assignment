@@ -252,16 +252,163 @@ Customer * Customers::Find(int key) {
 
 
 class Manager{
- private:
-  long int MANAGER_ID;
-  string NAME_MANAGER;
- public:
-  
+    private:
+      long long ID;
+      string name;
+    public:
+      Manager(long long ID, string name)								//constructor to assign ID and name to Manager
+      {
+        this->ID = ID;
+        this->name = name;
+      }
+      long long getID()
+        return ID;
+        
+      string getName()
+        return name;
+        
+      void addItem(Inventory* i1, long long ITEM_ID, string NAME, float RATE, int QUANTITY)		//This function accesses private member add_item() of Inventory
+        i1->add_item(ITEM_ID, NAME, RATE, QUANTITY);
+        
+      void deleteItem(Inventory* i1, long long ITEM_ID)							//This function accesses private member delete_item() of Inventory
+        i1->delete_item(ITEM_ID);
+        
+      void updateItem(Inventory* i1, long long ITEM_ID, float RATE, int QUANTITY)			//This function accesses private member update_item() of Inventory
+        i1->update_item(ITEM_ID, RATE, QUANTITY);
 };
 
 
-class Billing: public Inventory, public Customers{
+struct Item1												// This structure is for items in the shopping list
+{
+	long long productID;
+	string name;
+	float rate;
+	int quantity;
+	float amount;
+	item1 *next;
+	item1(long long productID, string name, float rate, int quantity)
+	{
+		this->productID = productID;
+		this->name = name;
+		this->rate = rate;
+		this->quantity = quantity;
+		this->amount = quantity*rate;
+		this->next = NULL;
+	}
+};
 
+class Billing{
+    private:
+      Item1 *head = NULL;
+      float total_amount = 0;
+    public:
+      int getHash(long long productID)									//returns hash for given product ID
+      {
+      	return productID%(HASHTABLE_SIZE);
+      }
+      void buy_item(long long productID, int productQuantity, Inventory* I1)				//Adds an item to the shopping list
+      {
+      	item* temp = I1->search_product(productID);
+       	if(temp)
+       	{
+      	  if(head==NULL)
+          {
+            item1* newNode = new item1(productID, temp->name, temp->rate, productQuantity);
+            head = newNode;
+	  }
+	  else
+	  {
+	    item1* tempNode = head;
+	    while(tempNode->next!=NULL)
+		tempNode = tempNode->next;
+
+	    item1* newNode = new item1(productID, temp->name, temp->rate, productQuantity);
+	    tempNode->next = newNode;
+	  }
+	}
+	else
+	  cout<<"Product ID not found"<<endl;  	
+      }
+        
+      void cancel_item(long long productID)								// function to remove an item from the shopping list
+      {
+       	item1* p = NULL;
+        item1 *q = head;
+        bool flag = false;
+        while(q!=NULL)
+        {
+          if(q==head)
+          {
+            if(q->productID==productID)
+            {
+        	flag = true;
+        	head = q->next;
+        	delete q;
+        	cout<<"Item cancelled"<<endl;
+        	break;
+	    }
+	   else
+	   {
+		p = q;
+		q = q->next;
+	   }
+	 }
+	 else if(q->productID== productID)
+	 {
+	   p->next = q->next;
+	   flag = true;
+	   cout<<"Item cancelled"<<endl;
+	   delete q;
+	   break;
+	 }
+	 else
+	 {
+	   p = q;
+	   q = q->next;
+	 }
+       }
+       if(!flag)
+	 cout<<"Enter valid product ID"<<endl;
+     }
+
+     void make_payment()										// function to make final payment for all the items and print the invoice.
+     {
+       item1 *temp = head;
+       while(temp!=NULL)
+       {
+       	 cout<<"Product ID: "<<temp->productID<<endl;
+         cout<<"Name: "<<temp->name<<endl;
+         cout<<"Quantity: "<<temp->quantity<<endl;
+         cout<<"Rate: "<<temp->rate<<endl;
+         cout<<"Amount: "<<temp->amount<<endl;
+         cout<<"\n\n";
+         total_amount += temp->amount;
+         temp = temp->next;
+       }
+       cout<<"Total amount to be paid: "<<total_amount<<"\n\n";
+     }
+
+     void assign_customer_id(long long customerID, CustomerDatabase* C1)				//function to print the customer ID on top of the bill
+     {
+       customer* temp = C1->search_customer(customerID);
+       cout<<"Customer ID: "<<temp->customerID<<endl;
+     }
+
+     void update_stock(Inventory* I1)									// function to update stock in inventory after billing process is done.
+     {
+	item1 *temp = head;
+	while(temp!=NULL)
+	{
+	  I1->update_stock(temp->productID,temp->quantity);
+	  temp = temp->next;
+	}
+     }
+
+    item1* getHead()											// function which returns head which points to the first item in the shopping list
+      	return head;
+
+    float getTotalAmount()										//function to get total amount to be paid after billing.
+	return total_amount;
 };
 
 
