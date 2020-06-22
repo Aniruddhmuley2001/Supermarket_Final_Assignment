@@ -1,56 +1,171 @@
 #include <iostream>
 using namespace std;
+const int HASHTABLE_SIZE =13;							//Size of Hash Table Array
 
-struct Item {
-    long int ITEM_ID;
+struct Item {									//Structure for Product
+    long long int ITEM_ID;
     string NAME;
     float RATE;
     int QUANTITY;
     Item* next;
+    item(long long ITEM_ID, string NAME, float RATE, int QUANTITY)    
+    {
+        this->ITEM_ID = ITEM_ID;
+        this->NAME = NAME;
+        this->RATE = RATE;
+        this->QUANTITY = QUANTITY;
+    }
 };
 
 class Inventory{
  private:
-  Item* HT1[10];
-  void SortedInsert(Item*, int);
-  int hash(int key) { return key % 10; };
-  void Add_item();
-  void Delete_item();
-  void Update_item();
-  friend class Manager;
- public:
-  Inventory();
-  void Insert(long int, string, float, int);
-  void update_stock();
-  void Get_Product_Info();
-  Item* Find(int);
-};
+  Item **inventoryHashTable;
+  int getHash(long long ITEM_ID) 						//This returns hash value of the product ID
+  {
+   return (ITEM_ID % (long long)(HASHTABLE_SIZE));
+  }
 
-void Inventory::SortedInsert(Item* it, int index) {
-    Item* head = HT1[index];
-    if (!head)
-        HT1[index] = it;
-    else {
-        Item* p = head, * q = nullptr;
-        while (p && p->ITEM_ID < it->ITEM_ID) {
-            q = p;
-            p = p->next;
+  void Add_item(long long ITEM_ID, string NAME, float RATE, int QUANTITY) 	// Function to add item to inventory databse
+  {
+  	int hash = getHash(ITEM_ID);
+        item *temp = NULL;
+        item *current = inventoryHashTable[hash];
+        while(current!=NULL)
+        {
+         temp = current;
+         current = current->next;
         }
-        if (q) {
-            q->next = it;
-            it->next = p;
+
+        if(current==NULL)
+        {
+         current = new item(ITEM_ID, NAME, RATE, QUANTITY);
+         if(temp==NULL)
+           inventoryHashTable[hash] = current;
+         else
+           temp->next = current;
         }
-        else {
-            it->next = head;
-            HT1[index] = it;
+
+        else
+        {
+          current->NAME = NAME;
+          current->RATE = RATE;
+          current->QUANTITY = QUANTITY;
         }
+  }
+
+  void Delete_item(long long ITEM_ID)						//Function to delete item from inventory
+  {
+    int hash = getHash(ITEM_ID);
+    Item *current = inventoryHashTable[hash];
+    Item *previous = NULL;
+    bool flag = false;
+    while(current != NULL)
+    {
+      if(current->ITEM_ID == ITEM_ID)
+      {
+        previous->next = current->next;
+        flag = true;
+        delete current;
+        break;
+      }
+      else
+      {
+        previous = current;
+        current = current->next;
+      }
+    } 
+            
+    if(flag==false)
+      cout<<"No item with item ID "<<ITEM_ID<<" found"<<endl;
+    else
+      cout<<"The item is deleted";
+  }
+
+  void Update_item(long long ITEM_ID, float RATE, int QUANTITY)			//Function to update rate and quantity of an item of inventory
+  {
+    int hash = getHash(ITEM_ID);
+    Item* current = inventoryHashTable[hash];
+    bool flag = false;
+    while(current!=NULL)
+    {
+      if(current->ITEM_ID==ITEM_ID)
+      {
+        current->RATE = RATE;
+        current->QUANTITY = QUANTITY;
+        flag = true;
+        break;
+      }
+      else
+        current = current->next;
     }
 
-}
+    if(flag==true)
+      cout<<"The item is updated"<<endl;
+    else
+      cout<<"The item is not updated"<<endl;
+  }
+  
+ public:
+  friend class Manager;
+  Inventory();
 
-Inventory::Inventory() {
-    for (int i = 0; i < 100; i++)
-        HT1[i] = nullptr;
+  void Update_stock(long long ITEM_ID, int QUANTITY)				//Function to update quantity of any item in inventory
+  {
+    int hash = getHash(ITEM_ID);
+    Item* temp = inventoryHashTable[hash];
+    while(temp!=NULL)
+    {
+      if(temp->ITEM_ID == ITEM_ID)
+      {
+        temp->QUANTITY -= QUANTITY;
+        cout<<"Stock of product ID "<<ITEM_ID<<" is updated"<<endl;
+        return;
+      }
+      temp = temp->next;
+    }
+    cout<<"Stock of "<<ITEM_ID<<" not updated"<<endl;
+  }
+
+  void get_product_info(long long ITEM_ID)					//Function to get information of any item in the inventory
+  {
+    int hash = getHash(ITEM_ID);
+    Item* temp = inventoryHashTable[hash];
+    while(temp!=NULL)
+    {
+      if(temp->ITEM_ID==ITEM_ID)
+      {
+        cout<<"Item ID: "<<temp->ITEM_ID<<endl;
+        cout<<"Name: "<<temp->NAME<<endl;
+        cout<<"Rate: "<<temp->RATE<<endl;
+        cout<<"Quantity: "<<temp->QUANTITY<<endl;
+        cout<<"\n\n";
+        return;
+      }
+      temp = temp->next;
+    }
+    cout<<"Item ID invalid"<<endl;
+  }
+
+  Item* search_product(long long ITEM_ID)//this function returns item* pointer for a given product ID.
+            {
+                int hash = getHash(productID);
+                item* current = inventoryHashTable[hash];
+                while(current!=NULL)
+                {
+                    if(current->productID == productID)    
+                        return current;
+                    else
+                        current = current->next;
+                }
+                return NULL;
+            }
+};
+
+Inventory::Inventory() 
+{
+    inventoryHashTable = new Item*[HASHTABLE_SIZE];
+    for(int i = 0; i < HASHTABLE_SIZE; i++)
+      inventoryHashTable[i] = NULL;
 }
 
 void Inventory::Insert(long int id, string name, float rate, int quantity) {
@@ -65,24 +180,21 @@ void Inventory::Insert(long int id, string name, float rate, int quantity) {
     SortedInsert(it, index);
 }
 
-Item * Inventory::Find(int key) {
-    int index = hash(key);
-    Item* p = HT1[index];
 
-    while (p && p->ITEM_ID != key) {
-        p = p->next;
-    }
-
-    return p;
-
-}
 
 
 struct Customer {
-    long int CUSTOMER_ID;
+    long long int CUSTOMER_ID;
     string NAME_CUSTOMER;
     float POINTS;
     Customer* next;
+    Customer(long long CUSTOMER_ID, string NAME_CUSTOMER)
+    {
+        this->CUSTOMER_ID = CUSTOMER_ID;
+        this->NAME_CUSTOMER = NAME_CUSTOMER;
+        this->POINTS = 0;
+        this->next = NULL;
+    }
 };
 
 class Customers{
