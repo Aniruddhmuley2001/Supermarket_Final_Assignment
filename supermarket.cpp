@@ -1,14 +1,14 @@
 #include <iostream>
 using namespace std;
-const int HASHTABLE_SIZE =13;							//Size of Hash Table Array
+const int HASHTABLE_SIZE =13;										//Size of Hash Table Array
 
-struct Item {									//Structure for Product
+struct Item {												//Structure for Product
     long long int ITEM_ID;
     string NAME;
     float RATE;
     int QUANTITY;
     Item* next;
-    item(long long ITEM_ID, string NAME, float RATE, int QUANTITY)    
+    Item(long long ITEM_ID, string NAME, float RATE, int QUANTITY)    
     {
         this->ITEM_ID = ITEM_ID;
         this->NAME = NAME;
@@ -20,16 +20,16 @@ struct Item {									//Structure for Product
 class Inventory{
  private:
   Item **inventoryHashTable;
-  int getHash(long long ITEM_ID) 						//This returns hash value of the product ID
+  int getHash(long long ITEM_ID) 									//This returns hash value of the product ID
   {
    return (ITEM_ID % (long long)(HASHTABLE_SIZE));
   }
 
-  void Add_item(long long ITEM_ID, string NAME, float RATE, int QUANTITY) 	// Function to add item to inventory databse
+  void Add_item(long long ITEM_ID, string NAME, float RATE, int QUANTITY) 				// Function to add item to inventory databse
   {
   	int hash = getHash(ITEM_ID);
-        item *temp = NULL;
-        item *current = inventoryHashTable[hash];
+        Item *temp = NULL;
+        Item *current = inventoryHashTable[hash];
         while(current!=NULL)
         {
          temp = current;
@@ -38,7 +38,7 @@ class Inventory{
 
         if(current==NULL)
         {
-         current = new item(ITEM_ID, NAME, RATE, QUANTITY);
+         current = new Item(ITEM_ID, NAME, RATE, QUANTITY);
          if(temp==NULL)
            inventoryHashTable[hash] = current;
          else
@@ -53,7 +53,7 @@ class Inventory{
         }
   }
 
-  void Delete_item(long long ITEM_ID)						//Function to delete item from inventory
+  void Delete_item(long long ITEM_ID)									//Function to delete item from inventory
   {
     int hash = getHash(ITEM_ID);
     Item *current = inventoryHashTable[hash];
@@ -81,7 +81,7 @@ class Inventory{
       cout<<"The item is deleted";
   }
 
-  void Update_item(long long ITEM_ID, float RATE, int QUANTITY)			//Function to update rate and quantity of an item of inventory
+  void Update_item(long long ITEM_ID, float RATE, int QUANTITY)						//Function to update rate and quantity of an item of inventory
   {
     int hash = getHash(ITEM_ID);
     Item* current = inventoryHashTable[hash];
@@ -109,7 +109,7 @@ class Inventory{
   friend class Manager;
   Inventory();
 
-  void Update_stock(long long ITEM_ID, int QUANTITY)				//Function to update quantity of any item in inventory
+  void Update_stock(long long ITEM_ID, int QUANTITY)							//Function to update quantity of any item in inventory
   {
     int hash = getHash(ITEM_ID);
     Item* temp = inventoryHashTable[hash];
@@ -126,7 +126,7 @@ class Inventory{
     cout<<"Stock of "<<ITEM_ID<<" not updated"<<endl;
   }
 
-  void get_product_info(long long ITEM_ID)					//Function to get information of any item in the inventory
+  void get_product_info(long long ITEM_ID)								//Function to get information of any item in the inventory
   {
     int hash = getHash(ITEM_ID);
     Item* temp = inventoryHashTable[hash];
@@ -146,7 +146,7 @@ class Inventory{
     cout<<"Item ID invalid"<<endl;
   }
 
-  Item* search_product(long long ITEM_ID)					//This function returns Item* pointer for a given item ID.
+  Item* search_product(long long ITEM_ID)								//This function returns Item* pointer for a given item ID.
   {
     int hash = getHash(ITEM_ID);
     Item* current = inventoryHashTable[hash];
@@ -185,70 +185,71 @@ struct Customer {
 };
 
 class Customers{
- private:
-  Customer* HT2[10];
-  void SortedInsert(Customer*, int);
-  int hash(int key) { return key % 10; };
-  long int CUSTOMER_ID;
-  string NAME_CUSTOMER;
-  float POINTS;
- public:
-  Customers();
-  void Insert(long int, string, float);
-  void Add_customer();
-  void Update_points();
-  Customer* Find(int);
+  private:
+    Customer **customerHashTable;
+  public:
+    Customers(){
+        customerHashTable = new Customer*[HASHTABLE_SIZE];
+        for(int i = 0 ;i < HASHTABLE_SIZE; i++)
+            customerHashTable[i] = NULL;
+    }
+    int getHash(long long CUSTOMER_ID){									// returns hash for given customer ID
+      return(CUSTOMER_ID%(HASHTABLE_SIZE));
+    }
+	
+    void add_customer(long long CUSTOMER_ID, string NAME_CUSTOMER)					// this function adds a new customer to customer database
+    {
+      int hash = getHash(CUSTOMER_ID);
+      Customer* temp = NULL;
+      Customer* current = customerHashTable[hash];
+      while(current != NULL)
+      {
+        temp = current;
+        current = current->next;
+      }
+      if(current == NULL)
+      {
+        current = new Customer(CUSTOMER_ID, NAME_CUSTOMER);
+        if(temp == NULL)
+          customerHashTable[hash] = current;
+        else
+          temp->next = current;
+      }
+    }
+
+    void update_points(long long CUSTOMER_ID, int POINTS)						// This function is used to update points of customer after billing
+    {
+      int hash = getHash(CUSTOMER_ID);
+      Customer* current = customerHashTable[hash];
+      while(current != NULL)
+      {
+        if(current->CUSTOMER_ID == CUSTOMER_ID)
+        {
+          current->POINTS += POINTS;
+          cout<<"Points of customer ID "<<CUSTOMER_ID<<" updated to "<<current->POINTS<<endl;
+          delete current;
+          return;
+        }
+        else
+          current = current->next;
+      }
+      cout<<"Invalid Customer ID"<<endl;
+    }
+
+      Customer* search_customer(long long CUSTOMER_ID)							// returns Customer* pointer for a given customer ID.   
+      {
+        int hash = getHash(CUSTOMER_ID);
+        Customer* current = customerHashTable[hash];
+        while(current!=NULL)
+        {
+          if(current->CUSTOMER_ID == CUSTOMER_ID)
+            return current;
+          else
+            current = current->next;
+        }
+        return NULL;
+      }
 };
-
-void Customers::SortedInsert(Customer* cust, int index) {
-    Customer* head = HT2[index];
-    if (!head)
-        HT2[index] = cust;
-    else {
-        Customer* p = head, * q = nullptr;
-        while (p && p->CUSTOMER_ID < cust->CUSTOMER_ID) {
-            q = p;
-            p = p->next;
-        }
-        if (q) {
-            q->next = cust;
-            cust->next = p;
-        }
-        else {
-            cust->next = head;
-            HT2[index] = cust;
-        }
-    }
-
-}
-
-Customers::Customers() {
-    for (int i = 0; i < 100; i++)
-        HT2[i] = nullptr;
-}
-
-void Customers::Insert(long int id, string name, float points) {
-    Customer* cust = new Customer;
-    cust->CUSTOMER_ID = id;
-    cust->NAME_CUSTOMER = name;
-    cust->POINTS = points;
-    cust->next = nullptr;
-
-    int index = hash(cust->CUSTOMER_ID);
-    SortedInsert(cust, index);
-}
-
-Customer * Customers::Find(int key) {
-    int index = hash(key);
-    Customer* p = HT2[index];
-
-    while (p && p->CUSTOMER_ID != key) {
-        p = p->next;
-    }
-
-    return p;
-
-}
 
 
 class Manager{
@@ -261,38 +262,43 @@ class Manager{
         this->ID = ID;
         this->name = name;
       }
-      long long getID()
+      long long getID(){
         return ID;
+      }
         
-      string getName()
+      string getName(){
         return name;
+      }
         
-      void addItem(Inventory* i1, long long ITEM_ID, string NAME, float RATE, int QUANTITY)		//This function accesses private member add_item() of Inventory
-        i1->add_item(ITEM_ID, NAME, RATE, QUANTITY);
+      void addItem(Inventory* i1, long long ITEM_ID, string NAME, float RATE, int QUANTITY){		//This function accesses private member add_item() of Inventory
+        i1->Add_item(ITEM_ID, NAME, RATE, QUANTITY);
+      }
         
-      void deleteItem(Inventory* i1, long long ITEM_ID)							//This function accesses private member delete_item() of Inventory
-        i1->delete_item(ITEM_ID);
+      void deleteItem(Inventory* i1, long long ITEM_ID){							//This function accesses private member delete_item() of Inventory
+        i1->Delete_item(ITEM_ID);
+      }    
         
-      void updateItem(Inventory* i1, long long ITEM_ID, float RATE, int QUANTITY)			//This function accesses private member update_item() of Inventory
-        i1->update_item(ITEM_ID, RATE, QUANTITY);
+      void updateItem(Inventory* i1, long long ITEM_ID, float RATE, int QUANTITY){			//This function accesses private member update_item() of Inventory
+        i1->Update_item(ITEM_ID, RATE, QUANTITY);
+      }
 };
 
 
 struct Item1												// This structure is for items in the shopping list
 {
-	long long productID;
-	string name;
-	float rate;
-	int quantity;
-	float amount;
-	item1 *next;
-	item1(long long productID, string name, float rate, int quantity)
+	long long ITEM_ID;
+	string NAME;
+	float RATE;
+	int QUANTITY;
+	float AMOUNT;
+	Item1 *next;
+	Item1(long long ITEM_ID, string NAME, float RATE, int QUANTITY)
 	{
-		this->productID = productID;
-		this->name = name;
-		this->rate = rate;
-		this->quantity = quantity;
-		this->amount = quantity*rate;
+		this->ITEM_ID = ITEM_ID;
+		this->NAME = NAME;
+		this->RATE = RATE;
+		this->QUANTITY = QUANTITY;
+		this->AMOUNT = QUANTITY*RATE;
 		this->next = NULL;
 	}
 };
@@ -302,27 +308,27 @@ class Billing{
       Item1 *head = NULL;
       float total_amount = 0;
     public:
-      int getHash(long long productID)									//returns hash for given product ID
+      int getHash(long long ITEM_ID)									//returns hash for given product ID
       {
-      	return productID%(HASHTABLE_SIZE);
+      	return ITEM_ID%(HASHTABLE_SIZE);
       }
-      void buy_item(long long productID, int productQuantity, Inventory* I1)				//Adds an item to the shopping list
+      void buy_item(long long ITEM_ID, int productQuantity, Inventory* I1)				//Adds an item to the shopping list
       {
-      	item* temp = I1->search_product(productID);
+      	Item* temp = I1->search_product(ITEM_ID);
        	if(temp)
        	{
       	  if(head==NULL)
           {
-            item1* newNode = new item1(productID, temp->name, temp->rate, productQuantity);
+            Item1* newNode = new Item1(ITEM_ID, temp->NAME, temp->RATE, productQuantity);
             head = newNode;
 	  }
 	  else
 	  {
-	    item1* tempNode = head;
-	    while(tempNode->next!=NULL)
+	    Item1* tempNode = head;
+	    while(tempNode->next != NULL)
 		tempNode = tempNode->next;
 
-	    item1* newNode = new item1(productID, temp->name, temp->rate, productQuantity);
+	    Item1* newNode = new Item1(ITEM_ID, temp->NAME, temp->RATE, productQuantity);
 	    tempNode->next = newNode;
 	  }
 	}
@@ -330,16 +336,16 @@ class Billing{
 	  cout<<"Product ID not found"<<endl;  	
       }
         
-      void cancel_item(long long productID)								// function to remove an item from the shopping list
+      void cancel_item(long long ITEM_ID)								// function to remove an item from the shopping list
       {
-       	item1* p = NULL;
-        item1 *q = head;
+       	Item1* p = NULL;
+        Item1 *q = head;
         bool flag = false;
-        while(q!=NULL)
+        while(q != NULL)
         {
-          if(q==head)
+          if(q == head)
           {
-            if(q->productID==productID)
+            if(q->ITEM_ID == ITEM_ID)
             {
         	flag = true;
         	head = q->next;
@@ -353,7 +359,7 @@ class Billing{
 		q = q->next;
 	   }
 	 }
-	 else if(q->productID== productID)
+	 else if(q->ITEM_ID == ITEM_ID)
 	 {
 	   p->next = q->next;
 	   flag = true;
@@ -368,47 +374,49 @@ class Billing{
 	 }
        }
        if(!flag)
-	 cout<<"Enter valid product ID"<<endl;
+	 cout<<"Enter valid item ID"<<endl;
      }
 
      void make_payment()										// function to make final payment for all the items and print the invoice.
      {
-       item1 *temp = head;
+       Item1 *temp = head;
        while(temp!=NULL)
        {
-       	 cout<<"Product ID: "<<temp->productID<<endl;
-         cout<<"Name: "<<temp->name<<endl;
-         cout<<"Quantity: "<<temp->quantity<<endl;
-         cout<<"Rate: "<<temp->rate<<endl;
-         cout<<"Amount: "<<temp->amount<<endl;
+       	 cout<<"Item ID: "<<temp->ITEM_ID<<endl;
+         cout<<"Name: "<<temp->NAME<<endl;
+         cout<<"Quantity: "<<temp->QUANTITY<<endl;
+         cout<<"Rate: "<<temp->RATE<<endl;
+         cout<<"Amount: "<<temp->AMOUNT<<endl;
          cout<<"\n\n";
-         total_amount += temp->amount;
+         total_amount += temp->AMOUNT;
          temp = temp->next;
        }
        cout<<"Total amount to be paid: "<<total_amount<<"\n\n";
      }
 
-     void assign_customer_id(long long customerID, CustomerDatabase* C1)				//function to print the customer ID on top of the bill
+     void assign_customer_id(long long CUSTOMER_ID, Customers* C1)					//function to print the customer ID on top of the bill
      {
-       customer* temp = C1->search_customer(customerID);
-       cout<<"Customer ID: "<<temp->customerID<<endl;
+       Customer* temp = C1->search_customer(CUSTOMER_ID);
+       cout<<"Customer ID: "<<temp->CUSTOMER_ID<<endl;
      }
 
      void update_stock(Inventory* I1)									// function to update stock in inventory after billing process is done.
      {
-	item1 *temp = head;
+	Item1 *temp = head;
 	while(temp!=NULL)
 	{
-	  I1->update_stock(temp->productID,temp->quantity);
+	  I1->Update_stock(temp->ITEM_ID,temp->QUANTITY);
 	  temp = temp->next;
 	}
      }
 
-    item1* getHead()											// function which returns head which points to the first item in the shopping list
+    Item1* getHead(){											// function which returns head which points to the first item in the shopping list
       	return head;
+    }
 
-    float getTotalAmount()										//function to get total amount to be paid after billing.
-	return total_amount;
+    float getTotalAmount(){										//function to get total amount to be paid after billing.
+	    return total_amount;
+    }
 };
 
 
@@ -445,12 +453,12 @@ int main(){
  Billing b1;
  int choice;
  bool flag = true;
- string transaction_id = "ABCDEFGH";//tranasction ID for a particular customer.
+ string transaction_id = "ABCDEFGH";												//tranasction ID for a particular customer.
 
  for(int i = 0 ;i< 100; i++)
-   m1.addItem(&i1,INVENTORY_DATASET[i][0],to_string(INVENTORY_DATASET[i][1]),INVENTORY_DATASET[i][2],INVENTORY_DATASET[i][3]);//adds item to inventory database.
+   m1.addItem(&i1,INVENTORY_DATASET[i][0],to_string(INVENTORY_DATASET[i][1]),INVENTORY_DATASET[i][2],INVENTORY_DATASET[i][3]);	//adds item to inventory database.
  for(int i = 0 ; i<100; i++)
-   c1.add_customer(CUSTOMER_DATASET[i][0],to_string(CUSTOMER_DATASET[i][1]));// adds item to customer database.
+   c1.add_customer(CUSTOMER_DATASET[i][0],to_string(CUSTOMER_DATASET[i][1]));							// adds item to customer database.
     
  do
  {
@@ -461,35 +469,35 @@ int main(){
    cout<<"4. To exit"<<endl;
    cin>>choice;
 
-   switch(choice)								// switch-case for a menu driven program.
+   switch(choice)														// switch-case for a menu driven program.
    {
      case 1: {
-               long long productID;
-               int quantity;
+               long long ITEM_ID;
+               int QUANTITY;
                cout<<"Enter product ID for the item and quantity of the item"<<endl;
-               cin>>productID>>quantity;
-               b1.buy_item(productID,quantity,&i1);
+               cin>>ITEM_ID>>QUANTITY;
+               b1.buy_item(ITEM_ID, QUANTITY, &i1);
                break;
              }
 
      case 2: {
-               long long customerID;
-               string name;
+               long long CUSTOMER_ID;
+               string NAME_CUSTOMER;
                cout<<"Enter your mobile number"<<endl;
-               cin>>customerID;
+               cin>>CUSTOMER_ID;
 
-               if(c1.search_customer(customerID)==NULL)
+               if(c1.search_customer(CUSTOMER_ID) == NULL)
                {
-                 cin>>name;
-                 c1.add_customer(customerID, name);
-	       }
-	       cout<<endl;
-	       cout<<"Transaction ID: "<<transaction_id<<endl;
-	       b1.assign_customer_id(customerID, &c1);
+                 cin>>NAME_CUSTOMER;
+                 c1.add_customer(CUSTOMER_ID, NAME_CUSTOMER);
+	           }
+	           cout<<endl;
+	           cout<<"Transaction ID: "<<transaction_id<<endl;
+	           b1.assign_customer_id(CUSTOMER_ID, &c1);
                b1.make_payment();
                b1.update_stock(&i1);
                cout<<endl;
-               c1.update_points(customerID,b1.getTotalAmount());
+               c1.update_points(CUSTOMER_ID, b1.getTotalAmount());
                cout<<endl;
                flag = false;
                break;
@@ -501,29 +509,29 @@ int main(){
                cin>>productID_cancel;
                b1.cancel_item(productID_cancel);
                break;
-	     }
+	         }
 
      case 4:{
                flag = false;
-	       break;
-	    }
+	           break;
+	        }
 			
      default: cout<<"Enter valid number"<<endl;    
    }
         
  }while(flag);
+
  cout<<"Below is the updated Inventory:"<<endl;
  Item1* temp = b1.getHead();
  if(temp)
  {
-   while(temp!=NULL)//prints updated inventory after whole billing process.
+   while(temp != NULL)														//prints updated inventory after whole billing process.
    {
-     i1.get_product_info(temp->productID);
+     i1.get_product_info(temp->ITEM_ID);
      temp = temp->next;
    }
  }
  else
    cout<<"No items found"<<endl;
- 
- return 0;
 }
+
