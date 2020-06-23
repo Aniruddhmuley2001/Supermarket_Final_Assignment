@@ -1,3 +1,7 @@
+/*
+Author: Aniruddh Muley
+Project: Super Market
+*/
 #include <iostream>
 using namespace std;
 const int HASHTABLE_SIZE =13;										//Size of Hash Table Array
